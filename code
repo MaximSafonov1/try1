@@ -119,3 +119,51 @@ with open(output_file, mode="w", newline="", encoding="utf-8") as file:
 
 print(f"Данные успешно сохранены в файл: {output_file}")
 
+
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Чтение данных из CSV
+csv_file = "europe_data.csv"
+data = pd.read_csv(csv_file, delimiter=";")
+
+# Разделение данных для car и motorbike
+car_data = data[data["car_or_motorbike"] == "car"]
+motorbike_data = data[data["car_or_motorbike"] == "motorbike"]
+
+# Установка ширины столбцов и положения на оси x
+x = np.arange(len(car_data["country"]))  # Количество стран
+width = 0.25  # Ширина столбца
+
+# Построение графика для car
+plt.figure(figsize=(20, 10))
+plt.bar(x - width, car_data["num_images"], width, label="Car - Images")
+plt.bar(x, car_data["num_annotations_with_country"], width, label="Car - Annotations")
+plt.bar(x + width, car_data["num_multiline"], width, label="Car - Multiline")
+
+# Добавление подписей для car
+plt.xticks(x, car_data["country"], rotation=90)
+plt.title("Car Data Visualization")
+plt.xlabel("Country")
+plt.ylabel("Counts")
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# Построение графика для motorbike
+plt.figure(figsize=(20, 10))
+plt.bar(x - width, motorbike_data["num_images"], width, label="Motorbike - Images")
+plt.bar(x, motorbike_data["num_annotations_with_country"], width, label="Motorbike - Annotations")
+plt.bar(x + width, motorbike_data["num_multiline"], width, label="Motorbike - Multiline")
+
+# Добавление подписей для motorbike
+plt.xticks(x, motorbike_data["country"], rotation=90)
+plt.title("Motorbike Data Visualization")
+plt.xlabel("Country")
+plt.ylabel("Counts")
+plt.legend()
+plt.tight_layout()
+plt.show()
