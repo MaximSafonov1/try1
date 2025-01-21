@@ -167,3 +167,71 @@ plt.ylabel("Counts")
 plt.legend()
 plt.tight_layout()
 plt.show()
+
+
+
+
+
+def process_annotations(xml_file):
+    tree = ET.parse(xml_file)
+    root = tree.getroot()
+
+    total_annotations = 0
+    multi_line_count = 0
+    valid_country_count = 0
+
+    for image in root.findall('image'):
+        # Проверка на наличие license_plate_country-0 в polygon или tag
+        country_value = None
+        for elem in image.findall(".//polygon[@label='license_plate_country-0']") + \
+                      image.findall(".//tag[@label='license_plate_country-0']"):
+            attribute = elem.find("attribute[@name='value']")
+            if attribute is not None and attribute.text.strip():
+                country_value = attribute.text.strip()
+                break
+
+        for polygon in image.findall('polygon'):
+            if polygon.get('label') == "license_plate-0":
+                # Получаем точки
+                points_str = polygon.get('points')
+                points = [
+                    list(map(int, point.split(',')))
+                    for point in points_str.split(';')
+                ]
+                # Сортируем и проверяем
+                sorted_points = sort_points(points)
+                if is_multi_line(sorted_points):
+                    multi_line_count += 1
+                    # Проверяем наличие корректного country_value
+                    if country_value:
+                        valid_country_count += 1
+                total_annotations += 1
+
+    # Расчет процента
+    percentage = (multi_line_count / total_annotations) * 100 if total_annotations > 0 else 0
+    valid_country_percentage = (valid_country_count / multi_line_count) * 100 if multi_line_count > 0 else 0
+    return (
+        f"{total_annotations}/{multi_line_count}({percentage:.2f}%)",
+        f"{valid_country_count}/{multi_line_count}({valid_country_percentage:.2f}%)"
+    )
+
+
+def process_folder(folder_path):
+    """
+    Обрабатывает все XML файлы в папке и выводит результаты.
+
+    Args:
+        folder_path (str): Путь к папке с XML файлами.
+    """
+    # Получаем список файлов в папке
+    xml_files = [f for f in os.listdir(folder_path) if f.endswith('.xml')]
+
+    for xml_file in xml_files:
+        xml_path = os.path.join(folder_path, xml_file)
+        result, country_result = process_annotations(xml_path)
+        print(f"{xml_file}: {result}, license_plate_country-0: {country_result}")
+
+
+# Пример вызова
+folder_path = "path_to_folder"  # Укажите путь к папке с XML файлами
+process_folder(folder_path)
