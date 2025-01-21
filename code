@@ -140,9 +140,9 @@ width = 0.25  # Ширина столбца
 
 # Построение графика для car
 plt.figure(figsize=(20, 10))
-plt.bar(x - width, car_data["num_images"], width, label="Car - Images")
-plt.bar(x, car_data["num_annotations_with_country"], width, label="Car - Annotations")
-plt.bar(x + width, car_data["num_multiline"], width, label="Car - Multiline")
+plt.bar(x - width, car_data["num_images"], width, label="Car - Images", edgecolor='black')
+plt.bar(x, car_data["num_annotations_with_country"], width, label="Car - Annotations", edgecolor='black')
+plt.bar(x + width, car_data["num_multiline"], width, label="Car - Multiline", edgecolor='black')
 
 # Добавление подписей для car
 plt.xticks(x, car_data["country"], rotation=90)
@@ -155,9 +155,9 @@ plt.show()
 
 # Построение графика для motorbike
 plt.figure(figsize=(20, 10))
-plt.bar(x - width, motorbike_data["num_images"], width, label="Motorbike - Images")
-plt.bar(x, motorbike_data["num_annotations_with_country"], width, label="Motorbike - Annotations")
-plt.bar(x + width, motorbike_data["num_multiline"], width, label="Motorbike - Multiline")
+plt.bar(x - width, motorbike_data["num_images"], width, label="Motorbike - Images", edgecolor='black')
+plt.bar(x, motorbike_data["num_annotations_with_country"], width, label="Motorbike - Annotations", edgecolor='black')
+plt.bar(x + width, motorbike_data["num_multiline"], width, label="Motorbike - Multiline", edgecolor='black')
 
 # Добавление подписей для motorbike
 plt.xticks(x, motorbike_data["country"], rotation=90)
