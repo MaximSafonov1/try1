@@ -69,17 +69,21 @@ plt.xticks(rotation=45)
 plt.title("Number of Annotations by Region")
 plt.xlabel("Region")
 plt.ylabel("Count")
-for i, val in enumerate(region_stats["Percentage"]):
-    plt.text(i, region_stats["Count"][i], f"{val}%", ha='center', va='bottom')
+for i, (count, percent) in enumerate(zip(region_stats["Count"], region_stats["Percentage"])):
+    plt.text(i, count, f"{count}\n({percent}%)", ha='center', va='bottom')
 plt.show()
 
 # Alternative visualization for plate number length by region
-plt.figure(figsize=(12, 6))
-sns.violinplot(x=df["region"], y=df["plate_length"])
-plt.xticks(rotation=45)
-plt.title("Plate Number Length Distribution by Region (Violin Plot)")
-plt.xlabel("Region")
-plt.ylabel("Plate Number Length")
+fig, axes = plt.subplots(nrows=1, ncols=len(region_counts), figsize=(len(region_counts) * 4, 6), sharey=True)
+fig.suptitle("Plate Number Length Distribution by Region")
+
+for ax, region in zip(axes, region_counts.index):
+    sns.histplot(df[df["region"] == region]["plate_length"], bins=10, kde=True, ax=ax)
+    ax.set_title(region)
+    ax.set_xlabel("Plate Length")
+    ax.set_ylabel("Count")
+
+plt.tight_layout()
 plt.show()
 
 # Visualization: number of plates with hyphens by region
@@ -89,6 +93,6 @@ plt.xticks(rotation=45)
 plt.title("Number of Plates with Hyphens by Region")
 plt.xlabel("Region")
 plt.ylabel("Count")
-for i, val in enumerate(hyphen_stats["Percentage"]):
-    plt.text(i, hyphen_stats["Count"][i], f"{val}%", ha='center', va='bottom')
+for i, (count, percent) in enumerate(zip(hyphen_stats["Count"], hyphen_stats["Percentage"])):
+    plt.text(i, count, f"{count}\n({percent}%)", ha='center', va='bottom')
 plt.show()
