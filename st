@@ -21,17 +21,20 @@ def parse_xml_files(folder_path: str) -> pd.DataFrame:
     data = []
     for file in os.listdir(folder_path):
         if file.endswith(".xml"):
-            tree = ET.parse(os.path.join(folder_path, file))
-            root = tree.getroot()
-            
-            for plate in root.findall(".//plate"):
-                region = plate.find("plate_region").text if plate.find("plate_region") is not None else "Unknown"
-                plate_number = plate.find("plate_number").text if plate.find("plate_number") is not None else "Unknown"
+            try:
+                tree = ET.parse(os.path.join(folder_path, file))
+                root = tree.getroot()
                 
-                data.append({
-                    "region": region.strip() if region else "Unknown",
-                    "plate_number": plate_number.strip() if plate_number else "Unknown"
-                })
+                for plate in root.findall(".//plate"):
+                    region = plate.find("plate_region").text if plate.find("plate_region") is not None else "Unknown"
+                    plate_number = plate.find("plate_number").text if plate.find("plate_number") is not None else "Unknown"
+                    
+                    data.append({
+                        "region": region.strip() if region else "Unknown",
+                        "plate_number": plate_number.strip() if plate_number else "Unknown"
+                    })
+            except ET.ParseError as e:
+                print(f"Error parsing {file}: {e}")
     return pd.DataFrame(data)
 
 # Read data
