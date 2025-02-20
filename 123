@@ -1,0 +1,62 @@
+import cv2
+import numpy as np
+from PIL import ImageFont, ImageDraw, Image
+
+# === 1. Load Image ===
+image_path = "car_plate.jpg"  # Path to the image
+image = cv2.imread(image_path)
+
+# === 2. Define Polygon Coordinates (x, y) ===
+polygon_pts = np.array([[934, 845], [1171, 836], [1167, 906], [931, 916]], dtype=np.float32)
+
+# Compute bounding box dimensions
+w = int(np.linalg.norm(polygon_pts[0] - polygon_pts[1]))  # Width
+h = int(np.linalg.norm(polygon_pts[1] - polygon_pts[2]))  # Height
+
+# Define the transformed rectangle for perspective correction
+dst_pts = np.array([[0, 0], [w, 0], [w, h], [0, h]], dtype=np.float32)
+
+# === 3. Apply Perspective Transformation ===
+M = cv2.getPerspectiveTransform(polygon_pts, dst_pts)
+plate = cv2.warpPerspective(image, M, (w, h))
+
+# === 4. Create Mask for Text Removal ===
+gray_plate = cv2.cvtColor(plate, cv2.COLOR_BGR2GRAY)
+_, mask = cv2.threshold(gray_plate, 180, 255, cv2.THRESH_BINARY_INV)
+
+# Inpaint to remove text
+plate_clean = cv2.inpaint(plate, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
+
+# === 5. Overlay New Text ===
+new_text = "A123BC 77"  # New license plate number
+font_path = "font.ttf"  # Path to the font file (e.g., GOST 50577)
+font_size = 40  # Font size
+
+# Convert to PIL image for better text rendering
+plate_pil = Image.fromarray(cv2.cvtColor(plate_clean, cv2.COLOR_BGR2RGB))
+draw = ImageDraw.Draw(plate_pil)
+font = ImageFont.truetype(font_path, font_size)
+
+# Center the text on the plate
+text_x = w // 6
+text_y = h // 4
+draw.text((text_x, text_y), new_text, font=font, fill=(0, 0, 0))  # Black text
+
+# Convert back to OpenCV format
+plate_final = cv2.cvtColor(np.array(plate_pil), cv2.COLOR_RGB2BGR)
+
+# === 6. Apply Reverse Perspective Transform ===
+M_inv = cv2.getPerspectiveTransform(dst_pts, polygon_pts)
+plate_warped_back = cv2.warpPerspective(plate_final, M_inv, (image.shape[1], image.shape[0]))
+
+# Create a mask to blend the new plate onto the original image
+mask_warped = cv2.warpPerspective(np.ones_like(plate_final, dtype=np.uint8) * 255, M_inv, (image.shape[1], image.shape[0]))
+
+# Blend the new plate with the original image
+image[mask_warped > 0] = plate_warped_back[mask_warped > 0]
+
+# === 7. Save and Display the Result ===
+cv2.imwrite("car_plate_modified.jpg", image)
+cv2.imshow("Modified License Plate", image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
